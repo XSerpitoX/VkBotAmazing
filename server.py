@@ -3,7 +3,7 @@ from vk_api.bot_longpoll import VkBotLongPoll
 from vk_api.bot_longpoll import VkBotEventType
 import random
 from conference import Conference
-from person import Person
+from person import PersonInitiator, PersonExperimental
 
 
 class Server:
@@ -26,6 +26,7 @@ class Server:
     def test(self):
         # Посылаем сообщение пользователю с указанным ID
         self.send_msg(384407860, "Привет-привет!")
+        self.vk_api.messages.getChat()
 
     def start(self):
         for event in self.long_poll.listen():  # Слушаем сервер
@@ -38,12 +39,15 @@ class Server:
 
     def command(self, message):
         conf = Conference(message['peer_id'] - 2000000000)  # получение информации о конфе в которой написали команду
-        initiator = Person(message['from_id'])
+        initiator = PersonInitiator(message)
         if "/test" in message['text']:
             self.send_msg(message['peer_id'], f"Бот работает!")
         if "/kick" in message['text']:
+            experimental = PersonExperimental(message)
             for i in range(len(initiator.conference)):
-                if (initiator.rang[i] >= 1) and (initiator.conference[i] == message['peer_id'] - 2000000000):
+                if (initiator.rang[i] >= 1) and \
+                        (initiator.conference[i] == message['peer_id'] - 2000000000) and \
+                        (initiator.rang[i] > experimental.rang[i]):
                     self.vk_api.messages.removeChatUser(chat_id=message['peer_id'] - 2000000000,
                                                         member_id=int(message['text'][5:].split("|")[0].replace("[id", "")))
                     self.send_msg(message['peer_id'],
@@ -52,8 +56,24 @@ class Server:
                     self.send_msg(message['peer_id'], "Недостаточно прав")
                 break
         if "/hi" in message['text']:
-            conf.setHi(message['text'][3:])
-            self.send_msg(message['peer_id'], f"Приветственное сообщение задано!")
+            for i in range(len(initiator.conference)):
+                if (initiator.rang[i] >= 2) and (initiator.conference[i] == message['peer_id'] - 2000000000):
+                    conf.setHi(message['text'][3:])
+                    self.send_msg(message['peer_id'], f"Приветственное сообщение задано!")
+                else:
+                    self.send_msg(message['peer_id'], "Недостаточно прав")
+                break
+        if "/rang" in message['text']:
+            experimental = PersonExperimental(message)
+            for i in range(len(initiator.conference)):
+                if (initiator.rang[i] >= 2) and \
+                        (initiator.conference[i] == message['peer_id'] - 2000000000) and \
+                        (initiator.rang[i] > experimental.rang[i]):
+                    experimental.setRang(message['text'], conf.id)
+                    self.send_msg(message['peer_id'], f"Уровень администрирования изменён")
+                else:
+                    self.send_msg(message['peer_id'], "Недостаточно прав")
+                break
 
     def action(self, message):
         conf = Conference(message['peer_id'] - 2000000000)  # получение информации о конфе в которой написали команду
