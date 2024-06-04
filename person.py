@@ -210,3 +210,27 @@ class PersonExperimental:
             connection.commit()
             connection.close()
             cursor.close()
+
+
+    def delWarn(self, id_conf):
+        connection = psycopg2.connect(
+            host=host,
+            user=user,
+            password=password,
+            database=db_name
+        )
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"""SELECT * FROM "Person" WHERE "ID" = {self.id};""")
+            value = cursor.fetchone()
+            a = value[4]
+            b = value[3]
+            print(a)
+            print(b)
+            cursor.execute(
+                f"""UPDATE "Person" SET warn[{b.index(id_conf) + 1}] = '{a[b.index(id_conf)]-1}'
+                                        WHERE "ID" = {self.id};""")
+            self.warn[b.index(id_conf)] -= 1
+            connection.commit()
+            connection.close()
+            cursor.close()

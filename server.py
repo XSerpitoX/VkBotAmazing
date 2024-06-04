@@ -62,7 +62,7 @@ class Server:
                 if initiator.conference[i] == message['peer_id'] - 2000000000:
                     if initiator.rang[i] >= 2:
                         conf.setHi(message['text'][3:])
-                        self.send_msg(message['peer_id'], f"Приветственное сообщение задано!")
+                        self.send_msg(message['peer_id'], f"Приветственное сообщение установлено!")
                         break
                     else:
                         self.send_msg(message['peer_id'], "Недостаточно прав")
@@ -74,7 +74,7 @@ class Server:
                 if initiator.conference[i] == message['peer_id'] - 2000000000:
                     if (initiator.rang[i] >= 2) and (initiator.rang[i] > experimental.rang[i]):
                         experimental.setRang(message['text'], conf.id)
-                        self.send_msg(message['peer_id'], f"Доступ изменён")
+                        self.send_msg(message['peer_id'], f"Права модератора обновлены")
                         break
                     else:
                         self.send_msg(message['peer_id'], "Недостаточно прав")
@@ -86,7 +86,7 @@ class Server:
                 if initiator.conference[i] == message['peer_id'] - 2000000000:
                     if (initiator.rang[i] >= 1) and (initiator.rang[i] >= experimental.rang[i]):
                         experimental.setNick(message['text'], conf.id)
-                        self.send_msg(message['peer_id'], f"Ник изменён на {experimental.nick[i]}")
+                        self.send_msg(message['peer_id'], f"Никнейм пользователя изменён на {experimental.nick}")
                         break
                     else:
                         self.send_msg(message['peer_id'], "Недостаточно прав")
@@ -98,16 +98,33 @@ class Server:
                 if initiator.conference[i] == message['peer_id'] - 2000000000:
                     if (initiator.rang[i] >= 3) and (initiator.rang[i] > experimental.rang[i]):
                         experimental.addWarn(message['peer_id'] - 2000000000)
-                        self.send_msg(message['peer_id'], f"{initiator.nick[i]} выдал варн {experimental.nick[i]}. {experimental.warn[i]}/3")
+                        self.send_msg(message['peer_id'], f"{initiator.nick[i]} выдал предупреждение {experimental.nick[i]} [{experimental.warn[i]}/3]")
                         break
                     else:
                         self.send_msg(message['peer_id'], "Недостаточно прав")
                         break
             if experimental.warn[i] >= 3:
-                self.send_msg(message['peer_id'], f"{experimental.nick[i]} получил 3/3 варнов")
+                self.send_msg(message['peer_id'], f"{experimental.nick[i]} получил 3/3 предупреждений")
                 experimental.remConf(message['peer_id'] - 2000000000)
                 self.vk_api.messages.removeChatUser(chat_id=message['peer_id'] - 2000000000,
                                                     member_id=int(experimental.id))
+
+        if "/unwarn" in message['text']:
+            experimental = PersonExperimental(message)
+            for i in range(len(initiator.conference)):
+                if initiator.conference[i] == message['peer_id'] - 2000000000:
+                    if (initiator.rang[i] >= 3) and (initiator.rang[i] > experimental.rang[i]):
+                        if experimental.warn[i] == 0:
+                            self.send_msg(message['peer_id'], f"У {experimental.nick[i]} нет активных предупреждений")
+                            break
+                        else:
+                            experimental.delWarn(message['peer_id'] - 2000000000)
+                            self.send_msg(message['peer_id'], f"{initiator.nick[i]} снял предупреждение у {experimental.nick[i]} [{experimental.warn[i]}/3]")
+                            break
+                    else:
+                        self.send_msg(message['peer_id'], "Недостаточно прав")
+                        break
+
 
     def action(self, message):
         conf = Conference(message['peer_id'] - 2000000000)  # получение информации о конфе в которой написали команду
