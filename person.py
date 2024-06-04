@@ -119,9 +119,9 @@ class PersonExperimental:
             print(a)
             print(b)
             cursor.execute(
-                f"""UPDATE "Person" SET nick[{b.index(id_conf) + 1}] = '{message.split(" ")[2]}'
+                f"""UPDATE "Person" SET nick[{b.index(id_conf) + 1}] = '{" ".join(message.split(" ")[2:])}'
                                 WHERE "ID" = {self.id};""")
-            self.nick = message.split(" ")[2]
+            self.nick = " ".join(message.split(" ")[2:])
             connection.commit()
             connection.close()
             cursor.close()
@@ -184,6 +184,29 @@ class PersonExperimental:
                                         conference = ARRAY{b}::integer[], 
                                         warn = ARRAY{d}::integer[]
                                 WHERE "ID" = {self.id};""")
+            connection.commit()
+            connection.close()
+            cursor.close()
+
+    def addWarn(self, id_conf):
+        connection = psycopg2.connect(
+            host=host,
+            user=user,
+            password=password,
+            database=db_name
+        )
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"""SELECT * FROM "Person" WHERE "ID" = {self.id};""")
+            value = cursor.fetchone()
+            a = value[4]
+            b = value[3]
+            print(a)
+            print(b)
+            cursor.execute(
+                f"""UPDATE "Person" SET warn[{b.index(id_conf) + 1}] = '{a[b.index(id_conf)]+1}'
+                                        WHERE "ID" = {self.id};""")
+            self.warn[b.index(id_conf)] += 1
             connection.commit()
             connection.close()
             cursor.close()
