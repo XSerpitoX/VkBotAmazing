@@ -27,7 +27,7 @@ class PersonInitiator:
                 cursor.execute(
                     f"""INSERT INTO "Person" VALUES(
                     '{self.id}',
-                    ARRAY{nick}::text[],
+                    ARRAY[{nick}]::text[],
                     '{rang}',
                     '{{{conf}}}',
                     '{warn}');""")
@@ -137,21 +137,22 @@ class PersonExperimental:
             cursor.execute(
                 f"""SELECT * FROM "Person" WHERE "ID" = {self.id};""")
             value = cursor.fetchone()
+            print(nick)
             if nick != '["Ник не указан"]':
-                print(nick)
                 name = f"{nick[0]['first_name']} {nick[0]['last_name']}"
             else:
                 name = nick
-            d = 0
-            a = 0
-            b = value[3]
-            b.append(id_conf)
-            print(b)
+            print(value)
+            value[1].append(name)
+            value[2].append(0)
+            value[3].append(id_conf)
+            value[4].append(0)
+            print(value)
             cursor.execute(
-                f"""UPDATE "Person" SET nick = ARRAY['{name}']::text[],
-                                        rang = ARRAY[{a}]::integer[],
-                                        conference = ARRAY{b}::integer[], 
-                                        warn = ARRAY[{d}]::integer[]
+                f"""UPDATE "Person" SET nick = ARRAY{value[1]}::text[],
+                                        rang = ARRAY{value[2]}::integer[],
+                                        conference = ARRAY{value[3]}::integer[], 
+                                        warn = ARRAY{value[4]}::integer[]
                                 WHERE "ID" = {self.id};""")
             connection.commit()
             connection.close()
