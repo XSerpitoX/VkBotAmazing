@@ -125,6 +125,16 @@ class Server:
                         self.send_msg(message['peer_id'], "Недостаточно прав")
                         break
 
+        if "/cmd" in message['text']:
+            for i in range(len(initiator.conference)):
+                if initiator.conference[i] == message['peer_id'] - 2000000000:
+                    if (initiator.rang[i] >=1 ) and (initiator.rang[i] > experimental.rang[i]):
+                             self.send_msg(message['peer_id'],f" {initiator.nick[i]} Cписок доступных команд")
+
+
+
+
+
 
     def action(self, message):
         conf = Conference(message['peer_id'] - 2000000000)  # получение информации о конфе в которой написали команду
