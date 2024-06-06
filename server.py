@@ -131,23 +131,39 @@ class Server:
                             self.send_msg(message['peer_id'], "Недостаточно прав")
                             break
 
-            if "/warn" in message['text']:
+            if "/allnick" in message['text']:
                 experimental = PersonExperimental(message)
                 for i in range(len(initiator.conference)):
                     if initiator.conference[i] == message['peer_id'] - 2000000000:
                         if (initiator.rang[i] >= 3) and (initiator.rang[i] > experimental.rang[i]):
-                            experimental.addWarn(message['peer_id'] - 2000000000)
-                            self.send_msg(message['peer_id'],
-                                          f"@id{initiator.id}({initiator.nick[i]}) выдал предупреждение @id{experimental.id}({experimental.nick[i]}) [{experimental.warn[i]}/3]")
-                            break
+                            l = experimental.conference
+                            for j in range(len(l)):
+                                if initiator.rang[i] > experimental.rang[j]:
+                                    print(experimental.conference[j])
+                                    experimental.setNick(message['text'], l[j])
                         else:
                             self.send_msg(message['peer_id'], "Недостаточно прав")
                             break
-                if experimental.warn[i] >= 3:
-                    self.send_msg(message['peer_id'],
-                                  f"@id{experimental.id}({experimental.nick[i]}) получил 3/3 предупреждений")
-                    experimental.remConf(message['peer_id'] - 2000000000)
-                    self.vk_api.messages.removeChatUser(chat_id=message['peer_id'] - 2000000000,
+
+            if "/warn" in message['text']:
+                experimental = PersonExperimental(message)
+                for i in range(len(initiator.conference)):
+                    if initiator.conference[i] == message['peer_id'] - 2000000000:
+                        for j in range(len(experimental.conference)):
+                            if initiator.conference[i] == experimental.conference[j]:
+                                if (initiator.rang[i] >= 3) and (initiator.rang[i] > experimental.rang[i]):
+                                    experimental.addWarn(message['peer_id'] - 2000000000)
+                                    self.send_msg(message['peer_id'],
+                                                  f"@id{initiator.id}({initiator.nick[i]}) выдал предупреждение @id{experimental.id}({experimental.nick[j]}) [{experimental.warn[j]}/3]")
+                                    break
+                                else:
+                                    self.send_msg(message['peer_id'], "Недостаточно прав")
+                                    break
+                        if experimental.warn[j] >= 3:
+                            self.send_msg(message['peer_id'],
+                                  f"@id{experimental.id}({experimental.nick[j]}) получил 3/3 предупреждений")
+                            experimental.remConf(message['peer_id'] - 2000000000)
+                            self.vk_api.messages.removeChatUser(chat_id=message['peer_id'] - 2000000000,
                                                         member_id=int(experimental.id))
 
             if "/unwarn" in message['text']:
