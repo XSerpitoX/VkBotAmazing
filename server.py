@@ -113,6 +113,20 @@ class Server:
                             self.send_msg(message['peer_id'], "Недостаточно прав")
                             break
 
+            if "/allnick" in message['text']:
+                experimental = PersonExperimental(message)
+                for i in range(len(initiator.conference)):
+                    if initiator.conference[i] == message['peer_id'] - 2000000000:
+                        if (initiator.rang[i] >= 3) and (initiator.rang[i] > experimental.rang[i]):
+                            l = experimental.conference
+                            for j in range(len(l)):
+                                if initiator.rang[i] > experimental.rang[j]:
+                                    print(experimental.conference[j])
+                                    experimental.setNick(message['text'], l[j])
+                        else:
+                            self.send_msg(message['peer_id'], "Недостаточно прав")
+                            break
+
             if "/warn" in message['text']:
                 experimental = PersonExperimental(message)
                 for i in range(len(initiator.conference)):
