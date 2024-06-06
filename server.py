@@ -111,10 +111,11 @@ class Server:
                 experimental = PersonExperimental(message)
                 for i in range(len(initiator.conference)):
                     if initiator.conference[i] == message['peer_id'] - 2000000000:
-                        if (initiator.rang[i] >= 3) and (initiator.rang[i] > experimental.rang[i]):
+                        if (initiator.rang[i] >= 3) and (initiator.rang[i] > experimental.rang[i]) and (initiator.rang[i] > int(message['text'].split(" ")[-1])):
+                            print(initiator.rang[i], experimental.rang[i])
                             l = experimental.conference
                             for j in range(len(l)):
-                                if initiator.rang[i] > experimental.rang[j]:
+                                if initiator.rang[i] > experimental.rang[i]:
                                     experimental.setRang(message['text'], l[j])
                         else:
                             self.send_msg(message['peer_id'], "Недостаточно прав")
@@ -128,7 +129,7 @@ class Server:
                             if (initiator.rang[i] >= 1) and (initiator.rang[i] >= experimental.rang[i]):
                                 experimental.setNick(message['text'], conf.id)
                                 self.send_msg(message['peer_id'],
-                                              f"Никнейм пользователя изменён на @id{experimental.id}({experimental.nick[j]})")
+                                              f"Никнейм пользователя изменён на @id{experimental.id}({experimental.nick})")
                                 break
                             else:
                                 self.send_msg(message['peer_id'], "Недостаточно прав")
