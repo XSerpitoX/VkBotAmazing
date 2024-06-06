@@ -61,6 +61,23 @@ class Server:
                             self.send_msg(message['peer_id'], "Недостаточно прав")
                             break
 
+            if "/allkick" in message['text']:
+                experimental = PersonExperimental(message)
+                for i in range(len(initiator.conference)):
+                    if initiator.conference[i] == message['peer_id'] - 2000000000:
+                        if (initiator.rang[i] >= 3) and (initiator.rang[i] > experimental.rang[i]):
+                            l = experimental.conference
+                            for j in range(len(l)):
+                                if initiator.rang[i] > experimental.rang[j]:
+                                    print(experimental.conference[j])
+                                    self.vk_api.messages.removeChatUser(chat_id=l[j],
+                                                                        member_id=int(
+                                                                    message['text'][8:].split("|")[0].replace("[id", "")))
+                                    experimental.remConf(l[j])
+                        else:
+                            self.send_msg(message['peer_id'], "Недостаточно прав")
+                            break
+
             if "/hi" in message['text']:
                 for i in range(len(initiator.conference)):
                     if initiator.conference[i] == message['peer_id'] - 2000000000:
