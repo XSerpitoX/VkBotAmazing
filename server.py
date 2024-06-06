@@ -99,7 +99,7 @@ class Server:
                 for i in range(len(initiator.conference)):
                     if initiator.conference[i] == message['peer_id'] - 2000000000:
                         for j in range(len(experimental.conference)):
-                            if (initiator.rang[i] >= 2) and (initiator.rang[i] > experimental.rang[j]):
+                            if (initiator.rang[i] >= 4) and (initiator.rang[i] > experimental.rang[j]):
                                 experimental.setRang(message['text'], conf.id)
                                 self.send_msg(message['peer_id'], f"Права модератора обновлены")
                                 break
@@ -111,7 +111,7 @@ class Server:
                 experimental = PersonExperimental(message)
                 for i in range(len(initiator.conference)):
                     if initiator.conference[i] == message['peer_id'] - 2000000000:
-                        if (initiator.rang[i] >= 3) and (initiator.rang[i] > experimental.rang[i]) and (initiator.rang[i] > int(message['text'].split(" ")[-1])):
+                        if (initiator.rang[i] >= 5) and (initiator.rang[i] > experimental.rang[i]) and (initiator.rang[i] > int(message['text'].split(" ")[-1])):
                             print(initiator.rang[i], experimental.rang[i])
                             l = experimental.conference
                             for j in range(len(l)):
@@ -188,6 +188,39 @@ class Server:
                             else:
                                 self.send_msg(message['peer_id'], "Недостаточно прав")
                                 break
+
+
+            if "/cmd" in message['text']:
+                for i in range(len(initiator.conference)):
+                    if initiator.conference[i] == message['peer_id'] - 2000000000:
+                        ans = "Список доступных команд: \n"
+                        if initiator.rang[i] >= 0 :
+                            ans += "/cmd - Узнать команды \n" \
+                                   "/help - Важная информация \n" \
+                                   "/nlist - Посмотреть список участников с их никами и должностями \n" \
+                                   "/stats - Посмотреть свою статистику \n"
+                        if initiator.rang[i] >= 1:
+                            ans += "/kick - Исключает пользователя из конференции \n" \
+                                   "/snick - Создание ника в конференции \n"
+                        if initiator.rang[i] >= 2:
+                            ans += "/hi - Создать приветствие в беседе \n"
+                        if initiator.rang[i] >= 3:
+                            ans += "/allkick - Кик из всех конференций под контролем бота \n" \
+                                   "/allrang - Выставляет уровень админки во всех конференциях \n" \
+                                   "/allnick - Выставляет ник во всех конференциях \n" \
+                                   "/warn - Предупреждение за нарушение правил поведения в беседе \n" \
+                                   "/unwarn - Снять предупреждение \n"
+                        if initiator.rang[i] >= 4:
+                            ans += "/rang - Выставляет уровень админки в конфе \n"
+                        self.send_msg(message['peer_id'], ans)
+
+
+
+
+
+
+
+
 
     def action(self, message):
         conf = Conference(message['peer_id'] - 2000000000)  # получение информации о конфе в которой написали команду
