@@ -3,7 +3,7 @@ from config import host, user, password, db_name
 
 
 class PersonInitiator:
-    def __init__(self, info):
+    def __init__(self, info, name):
         if 'action' in info:
             self.id = info['action']['member_id']
         else:
@@ -29,6 +29,7 @@ class PersonInitiator:
                             ARRAY[]::integer[],
                             ARRAY[]::text[]);""")
                 connection.commit()
+                self.addConf(info['peer_id'] - 2000000000, name)
                 cursor.execute(
                     f"""SELECT * FROM "Person" WHERE "ID" = {self.id};""")
                 value = cursor.fetchone()
@@ -36,12 +37,46 @@ class PersonInitiator:
             self.rang = value[2]
             self.conference = value[3]
             self.warn = value[4]
+            self.name = value[5]
+            connection.close()
+            cursor.close()
+
+    def addConf(self, id_conf, nick='["Ник не указан"]'):
+        connection = psycopg2.connect(
+            host=host,
+            user=user,
+            password=password,
+            database=db_name
+        )
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"""SELECT * FROM "Person" WHERE "ID" = {self.id};""")
+            value = cursor.fetchone()
+            print(nick)
+            if nick != '["Ник не указан"]':
+                name = f"{nick[0]['first_name']} {nick[0]['last_name']}"
+            else:
+                name = nick
+            print(value)
+            value[1].append(name)
+            value[2].append(0)
+            value[3].append(id_conf)
+            value[4].append(0)
+            print(value)
+            cursor.execute(
+                f"""UPDATE "Person" SET nick = ARRAY{value[1]}::text[],
+                                            rang = ARRAY{value[2]}::integer[],
+                                            conference = ARRAY{value[3]}::integer[], 
+                                            warn = ARRAY{value[4]}::integer[],
+                                            name = ARRAY{value[1]}::text[]
+                                    WHERE "ID" = {self.id};""")
+            connection.commit()
             connection.close()
             cursor.close()
 
 
 class PersonExperimental:
-    def __init__(self, info):
+    def __init__(self, info, name):
         if 'action' in info:
             self.id = info['action']['member_id']
         else:
@@ -66,6 +101,7 @@ class PersonExperimental:
                             ARRAY[]::integer[],
                             ARRAY[]::text[]);""")
                 connection.commit()
+                self.addConf(info['peer_id'] - 2000000000, name)
                 cursor.execute(
                     f"""SELECT * FROM "Person" WHERE "ID" = {self.id};""")
                 value = cursor.fetchone()
@@ -73,6 +109,7 @@ class PersonExperimental:
             self.rang = value[2]
             self.conference = value[3]
             self.warn = value[4]
+            self.name = value[5]
             connection.close()
             cursor.close()
 
@@ -204,13 +241,12 @@ class PersonExperimental:
             print(a)
             print(b)
             cursor.execute(
-                f"""UPDATE "Person" SET warn[{b.index(id_conf) + 1}] = '{a[b.index(id_conf)]+1}'
+                f"""UPDATE "Person" SET warn[{b.index(id_conf) + 1}] = '{a[b.index(id_conf)] + 1}'
                                         WHERE "ID" = {self.id};""")
             self.warn[b.index(id_conf)] += 1
             connection.commit()
             connection.close()
             cursor.close()
-
 
     def delWarn(self, id_conf):
         connection = psycopg2.connect(
@@ -228,13 +264,12 @@ class PersonExperimental:
             print(a)
             print(b)
             cursor.execute(
-                f"""UPDATE "Person" SET warn[{b.index(id_conf) + 1}] = '{a[b.index(id_conf)]-1}'
+                f"""UPDATE "Person" SET warn[{b.index(id_conf) + 1}] = '{a[b.index(id_conf)] - 1}'
                                         WHERE "ID" = {self.id};""")
             self.warn[b.index(id_conf)] -= 1
             connection.commit()
             connection.close()
             cursor.close()
-
 
 
 def nlist(id_conf):

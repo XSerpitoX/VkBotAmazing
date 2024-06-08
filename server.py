@@ -45,12 +45,15 @@ class Server:
             self.send_msg(message['peer_id'],
                           f"Бот не авторизован. Дальнейшая работа будет доступна после авторизации. \n \n Обратитесь к разработчикам")
         else:
-            initiator = PersonInitiator(message)
+            initiator = PersonInitiator(message,
+                                        self.vk_api.users.get(user_ids=message['from_id'], fields="screen_name"))
             if "/test" in message['text']:
                 self.send_msg(message['peer_id'], f"Бот работает!")
 
             if "/kick" in message['text']:
-                experimental = PersonExperimental(message)
+                experimental = PersonExperimental(message, self.vk_api.users.get(
+                    user_ids=int(message['text'][5:].split("|")[0].replace("[id", "")),
+                    fields="screen_name"))
                 for i in range(len(initiator.conference)):
                     if initiator.conference[i] == message['peer_id'] - 2000000000:
                         for j in range(len(experimental.conference)):
@@ -68,7 +71,9 @@ class Server:
                                 break
 
             if "/allkick" in message['text']:
-                experimental = PersonExperimental(message)
+                experimental = PersonExperimental(message, self.vk_api.users.get(
+                    user_ids=int(message['text'][5:].split("|")[0].replace("[id", "")),
+                    fields="screen_name"))
                 for i in range(len(initiator.conference)):
                     if initiator.conference[i] == message['peer_id'] - 2000000000:
                         if (initiator.rang[i] >= 3) and (initiator.rang[i] > experimental.rang[i]):
@@ -97,7 +102,9 @@ class Server:
                             break
 
             if "/rang" in message['text']:
-                experimental = PersonExperimental(message)
+                experimental = PersonExperimental(message, self.vk_api.users.get(
+                    user_ids=int(message['text'][5:].split("|")[0].replace("[id", "")),
+                    fields="screen_name"))
                 for i in range(len(initiator.conference)):
                     if initiator.conference[i] == message['peer_id'] - 2000000000:
                         for j in range(len(experimental.conference)):
@@ -110,7 +117,9 @@ class Server:
                                 break
 
             if "/allrang" in message['text']:
-                experimental = PersonExperimental(message)
+                experimental = PersonExperimental(message, self.vk_api.users.get(
+                    user_ids=int(message['text'][5:].split("|")[0].replace("[id", "")),
+                    fields="screen_name"))
                 for i in range(len(initiator.conference)):
                     if initiator.conference[i] == message['peer_id'] - 2000000000:
                         if (initiator.rang[i] >= 5) and (initiator.rang[i] > experimental.rang[i]) and (
@@ -125,7 +134,9 @@ class Server:
                             break
 
             if "/snick" in message['text']:
-                experimental = PersonExperimental(message)
+                experimental = PersonExperimental(message, self.vk_api.users.get(
+                    user_ids=int(message['text'][5:].split("|")[0].replace("[id", "")),
+                    fields="screen_name"))
                 for i in range(len(initiator.conference)):
                     if initiator.conference[i] == message['peer_id'] - 2000000000:
                         for j in range(len(experimental.conference)):
@@ -139,7 +150,9 @@ class Server:
                                 break
 
             if "/allnick" in message['text']:
-                experimental = PersonExperimental(message)
+                experimental = PersonExperimental(message, self.vk_api.users.get(
+                    user_ids=int(message['text'][5:].split("|")[0].replace("[id", "")),
+                    fields="screen_name"))
                 for i in range(len(initiator.conference)):
                     if initiator.conference[i] == message['peer_id'] - 2000000000:
                         if (initiator.rang[i] >= 3) and (initiator.rang[i] > experimental.rang[i]):
@@ -153,7 +166,9 @@ class Server:
                             break
 
             if "/warn" in message['text']:
-                experimental = PersonExperimental(message)
+                experimental = PersonExperimental(message, self.vk_api.users.get(
+                    user_ids=int(message['text'][5:].split("|")[0].replace("[id", "")),
+                    fields="screen_name"))
                 for i in range(len(initiator.conference)):
                     if initiator.conference[i] == message['peer_id'] - 2000000000:
                         for j in range(len(experimental.conference)):
@@ -174,7 +189,9 @@ class Server:
                                                                 member_id=int(experimental.id))
 
             if "/unwarn" in message['text']:
-                experimental = PersonExperimental(message)
+                experimental = PersonExperimental(message, self.vk_api.users.get(
+                    user_ids=int(message['text'][5:].split("|")[0].replace("[id", "")),
+                    fields="screen_name"))
                 for i in range(len(initiator.conference)):
                     if initiator.conference[i] == message['peer_id'] - 2000000000:
                         for j in range(len(experimental.conference)):
