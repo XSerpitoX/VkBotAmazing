@@ -101,6 +101,10 @@ class Server:
                             self.send_msg(message['peer_id'], "Недостаточно прав")
                             break
 
+
+
+
+
             if "/rang" in message['text']:
                 experimental = PersonExperimental(message, self.vk_api.users.get(
                     user_ids=int(message['text'][5:].split("|")[0].replace("[id", "")),
@@ -235,6 +239,11 @@ class Server:
 
             if "/nlist" in message['text']:
                 self.send_msg(message['peer_id'], person.nlist(message['peer_id'] - 2000000000))
+                
+            if "/help" in message['text']:
+                for i in range(len(initiator.conference)):
+                    if initiator.conference[i] == message['peer_id'] - 2000000000:
+                        self.send_msg(message['peer_id'], f"Важная информация: ")
 
     def action(self, message):
         conf = Conference(message['peer_id'] - 2000000000)  # получение информации о конфе в которой написали команду
