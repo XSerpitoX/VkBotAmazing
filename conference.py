@@ -17,7 +17,10 @@ class Conference:
             cursor.execute(
                 f"""SELECT * FROM "Conference" WHERE "ID" = {chat_id};""")
             value = cursor.fetchone()
-            self.hi = value[4]
+            if value is None:
+                self.hi = None
+            else:
+                self.hi = value[4]
             connection.close()
             cursor.close()
 
