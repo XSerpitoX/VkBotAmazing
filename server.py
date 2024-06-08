@@ -2,6 +2,8 @@ import vk_api.vk_api
 from vk_api.bot_longpoll import VkBotLongPoll
 from vk_api.bot_longpoll import VkBotEventType
 import random
+
+import person
 from conference import Conference
 from person import PersonInitiator, PersonExperimental
 
@@ -51,18 +53,19 @@ class Server:
                 experimental = PersonExperimental(message)
                 for i in range(len(initiator.conference)):
                     if initiator.conference[i] == message['peer_id'] - 2000000000:
-                        if (initiator.rang[i] >= 1) and (initiator.rang[i] > experimental.rang[i]):
-                            self.vk_api.messages.removeChatUser(chat_id=message['peer_id'] - 2000000000,
-                                                                member_id=int(
-                                                                    message['text'][5:].split("|")[0].replace("[id",
-                                                                                                              "")))
-                            self.send_msg(message['peer_id'],
-                                          f"@id{initiator.id}({initiator.nick[i]}) исключил @id{experimental.id}({experimental.nick[i]})")
-                            experimental.remConf(message['peer_id'] - 2000000000)
-                            break
-                        else:
-                            self.send_msg(message['peer_id'], "Недостаточно прав")
-                            break
+                        for j in range(len(experimental.conference)):
+                            if (initiator.rang[i] >= 1) and (initiator.rang[i] > experimental.rang[j]):
+                                self.vk_api.messages.removeChatUser(chat_id=message['peer_id'] - 2000000000,
+                                                                    member_id=int(
+                                                                        message['text'][5:].split("|")[0].replace("[id",
+                                                                                                                  "")))
+                                self.send_msg(message['peer_id'],
+                                              f"@id{initiator.id}({initiator.nick[i]}) исключил @id{experimental.id}({experimental.nick[j]})")
+                                experimental.remConf(message['peer_id'] - 2000000000)
+                                break
+                            else:
+                                self.send_msg(message['peer_id'], "Недостаточно прав")
+                                break
 
             if "/allkick" in message['text']:
                 experimental = PersonExperimental(message)
@@ -97,22 +100,25 @@ class Server:
                 experimental = PersonExperimental(message)
                 for i in range(len(initiator.conference)):
                     if initiator.conference[i] == message['peer_id'] - 2000000000:
-                        if (initiator.rang[i] >= 2) and (initiator.rang[i] > experimental.rang[i]):
-                            experimental.setRang(message['text'], conf.id)
-                            self.send_msg(message['peer_id'], f"Права модератора обновлены")
-                            break
-                        else:
-                            self.send_msg(message['peer_id'], "Недостаточно прав")
-                            break
+                        for j in range(len(experimental.conference)):
+                            if (initiator.rang[i] >= 4) and (initiator.rang[i] > experimental.rang[j]):
+                                experimental.setRang(message['text'], conf.id)
+                                self.send_msg(message['peer_id'], f"Права модератора обновлены")
+                                break
+                            else:
+                                self.send_msg(message['peer_id'], "Недостаточно прав")
+                                break
 
             if "/allrang" in message['text']:
                 experimental = PersonExperimental(message)
                 for i in range(len(initiator.conference)):
                     if initiator.conference[i] == message['peer_id'] - 2000000000:
-                        if (initiator.rang[i] >= 3) and (initiator.rang[i] > experimental.rang[i]):
+                        if (initiator.rang[i] >= 5) and (initiator.rang[i] > experimental.rang[i]) and (
+                                initiator.rang[i] > int(message['text'].split(" ")[-1])):
+                            print(initiator.rang[i], experimental.rang[i])
                             l = experimental.conference
                             for j in range(len(l)):
-                                if initiator.rang[i] > experimental.rang[j]:
+                                if initiator.rang[i] > experimental.rang[i]:
                                     experimental.setRang(message['text'], l[j])
                         else:
                             self.send_msg(message['peer_id'], "Недостаточно прав")
@@ -122,14 +128,15 @@ class Server:
                 experimental = PersonExperimental(message)
                 for i in range(len(initiator.conference)):
                     if initiator.conference[i] == message['peer_id'] - 2000000000:
-                        if (initiator.rang[i] >= 1) and (initiator.rang[i] >= experimental.rang[i]):
-                            experimental.setNick(message['text'], conf.id)
-                            self.send_msg(message['peer_id'],
-                                          f"Никнейм пользователя изменён на @id{experimental.id}({experimental.nick})")
-                            break
-                        else:
-                            self.send_msg(message['peer_id'], "Недостаточно прав")
-                            break
+                        for j in range(len(experimental.conference)):
+                            if (initiator.rang[i] >= 1) and (initiator.rang[i] >= experimental.rang[i]):
+                                experimental.setNick(message['text'], conf.id)
+                                self.send_msg(message['peer_id'],
+                                              f"Никнейм пользователя изменён на @id{experimental.id}({experimental.nick})")
+                                break
+                            else:
+                                self.send_msg(message['peer_id'], "Недостаточно прав")
+                                break
 
             if "/allnick" in message['text']:
                 experimental = PersonExperimental(message)
@@ -161,28 +168,56 @@ class Server:
                                     break
                         if experimental.warn[j] >= 3:
                             self.send_msg(message['peer_id'],
-                                  f"@id{experimental.id}({experimental.nick[j]}) получил 3/3 предупреждений")
+                                          f"@id{experimental.id}({experimental.nick[j]}) получил 3/3 предупреждений")
                             experimental.remConf(message['peer_id'] - 2000000000)
                             self.vk_api.messages.removeChatUser(chat_id=message['peer_id'] - 2000000000,
-                                                        member_id=int(experimental.id))
+                                                                member_id=int(experimental.id))
 
             if "/unwarn" in message['text']:
                 experimental = PersonExperimental(message)
                 for i in range(len(initiator.conference)):
                     if initiator.conference[i] == message['peer_id'] - 2000000000:
-                        if (initiator.rang[i] >= 3) and (initiator.rang[i] > experimental.rang[i]):
-                            if experimental.warn[i] == 0:
-                                self.send_msg(message['peer_id'],
-                                              f"У @id{experimental.id}({experimental.nick[i]}) нет активных предупреждений")
-                                break
+                        for j in range(len(experimental.conference)):
+                            if (initiator.rang[i] >= 3) and (initiator.rang[i] > experimental.rang[j]):
+                                if experimental.warn[j] == 0:
+                                    self.send_msg(message['peer_id'],
+                                                  f"У @id{experimental.id}({experimental.nick[j]}) нет активных предупреждений")
+                                    break
+                                else:
+                                    experimental.delWarn(message['peer_id'] - 2000000000)
+                                    self.send_msg(message['peer_id'],
+                                                  f"@id{initiator.id}({initiator.nick[i]}) снял предупреждение у @id{experimental.id}({experimental.nick[j]}) [{experimental.warn[j]}/3]")
+                                    break
                             else:
-                                experimental.delWarn(message['peer_id'] - 2000000000)
-                                self.send_msg(message['peer_id'],
-                                              f"@id{initiator.id}({initiator.nick[i]}) снял предупреждение у @id{experimental.id}({experimental.nick[i]}) [{experimental.warn[i]}/3]")
+                                self.send_msg(message['peer_id'], "Недостаточно прав")
                                 break
-                        else:
-                            self.send_msg(message['peer_id'], "Недостаточно прав")
-                            break
+
+            if "/cmd" in message['text']:
+                for i in range(len(initiator.conference)):
+                    if initiator.conference[i] == message['peer_id'] - 2000000000:
+                        ans = "Список доступных команд: \n"
+                        if initiator.rang[i] >= 0:
+                            ans += "/cmd - Узнать команды \n" \
+                                   "/help - Важная информация \n" \
+                                   "/nlist - Посмотреть список участников с их никами и должностями \n" \
+                                   "/stats - Посмотреть свою статистику \n"
+                        if initiator.rang[i] >= 1:
+                            ans += "/kick - Исключает пользователя из конференции \n" \
+                                   "/snick - Создание ника в конференции \n"
+                        if initiator.rang[i] >= 2:
+                            ans += "/hi - Создать приветствие в беседе \n"
+                        if initiator.rang[i] >= 3:
+                            ans += "/allkick - Кик из всех конференций под контролем бота \n" \
+                                   "/allrang - Выставляет уровень админки во всех конференциях \n" \
+                                   "/allnick - Выставляет ник во всех конференциях \n" \
+                                   "/warn - Предупреждение за нарушение правил поведения в беседе \n" \
+                                   "/unwarn - Снять предупреждение \n"
+                        if initiator.rang[i] >= 4:
+                            ans += "/rang - Выставляет уровень админки в конфе \n"
+                        self.send_msg(message['peer_id'], ans)
+
+            if "/nlist" in message['text']:
+                self.send_msg(message['peer_id'], person.nlist(message['peer_id'] - 2000000000))
 
     def action(self, message):
         conf = Conference(message['peer_id'] - 2000000000)  # получение информации о конфе в которой написали команду

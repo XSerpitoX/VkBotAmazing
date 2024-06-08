@@ -3,7 +3,7 @@ from config import host, user, password, db_name
 
 
 class PersonInitiator:
-    def __init__(self, info, name='[Ник не указан]'):
+    def __init__(self, info):
         if 'action' in info:
             self.id = info['action']['member_id']
         else:
@@ -20,17 +20,14 @@ class PersonInitiator:
             value = cursor.fetchone()
             print(value)
             if value is None:
-                nick = name
-                rang = '{0}'
-                conf = info['peer_id'] - 2000000000
-                warn = '{0}'
                 cursor.execute(
                     f"""INSERT INTO "Person" VALUES(
-                    '{self.id}',
-                    ARRAY[{nick}]::text[],
-                    '{rang}',
-                    '{{{conf}}}',
-                    '{warn}');""")
+                            '{self.id}',
+                            ARRAY[]::text[],
+                            ARRAY[]::integer[],
+                            ARRAY[]::integer[],
+                            ARRAY[]::integer[],
+                            ARRAY[]::text[]);""")
                 connection.commit()
                 cursor.execute(
                     f"""SELECT * FROM "Person" WHERE "ID" = {self.id};""")
@@ -44,7 +41,7 @@ class PersonInitiator:
 
 
 class PersonExperimental:
-    def __init__(self, info, name='["Ник не указан"]'):
+    def __init__(self, info):
         if 'action' in info:
             self.id = info['action']['member_id']
         else:
@@ -60,16 +57,14 @@ class PersonExperimental:
                 f"""SELECT * FROM "Person" WHERE "ID" = {self.id};""")
             value = cursor.fetchone()
             if value is None:
-                rang = '{0}'
-                conf = info['peer_id'] - 2000000000
-                warn = '{0}'
                 cursor.execute(
                     f"""INSERT INTO "Person" VALUES(
                             '{self.id}',
                             ARRAY[]::text[],
                             ARRAY[]::integer[],
                             ARRAY[]::integer[],
-                            ARRAY[]::integer[]);""")
+                            ARRAY[]::integer[],
+                            ARRAY[]::text[]);""")
                 connection.commit()
                 cursor.execute(
                     f"""SELECT * FROM "Person" WHERE "ID" = {self.id};""")
@@ -152,7 +147,8 @@ class PersonExperimental:
                 f"""UPDATE "Person" SET nick = ARRAY{value[1]}::text[],
                                         rang = ARRAY{value[2]}::integer[],
                                         conference = ARRAY{value[3]}::integer[], 
-                                        warn = ARRAY{value[4]}::integer[]
+                                        warn = ARRAY{value[4]}::integer[],
+                                        name = ARRAY{value[1]}::text[]
                                 WHERE "ID" = {self.id};""")
             connection.commit()
             connection.close()
@@ -173,17 +169,20 @@ class PersonExperimental:
             d = value[4]
             a = value[2]
             b = value[3]
+            e = value[5]
             f = b.index(id_conf)
             a.pop(f)
             c.pop(f)
             d.pop(f)
             b.remove(id_conf)
+            e.pop(f)
             print(b)
             cursor.execute(
                 f"""UPDATE "Person" SET nick = ARRAY{c}::text[],
                                         rang = ARRAY{a}::integer[],
                                         conference = ARRAY{b}::integer[], 
-                                        warn = ARRAY{d}::integer[]
+                                        warn = ARRAY{d}::integer[],
+                                        nick = ARRAY{e}::text[]
                                 WHERE "ID" = {self.id};""")
             connection.commit()
             connection.close()
@@ -235,3 +234,25 @@ class PersonExperimental:
             connection.commit()
             connection.close()
             cursor.close()
+
+
+
+def nlist(id_conf):
+    ans = "Имя пользователя - Ник пользователя \n"
+    connection = psycopg2.connect(
+        host=host,
+        user=user,
+        password=password,
+        database=db_name
+    )
+    with connection.cursor() as cursor:
+        cursor.execute(
+            f"""SELECT * FROM public."Person";""")
+        values = cursor.fetchall()
+        connection.close()
+        cursor.close()
+        for value in values:
+            if id_conf in value[3]:
+                ans += f"@id{value[0]}({value[5][value[3].index(id_conf)]}) - {value[1][value[3].index(id_conf)]} \n"
+
+        return ans
