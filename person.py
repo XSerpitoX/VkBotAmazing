@@ -14,6 +14,7 @@ class PersonInitiator:
             password=password,
             database=db_name
         )
+        nname = name[0]['first_name'] + " " + name[0]['last_name']
         with connection.cursor() as cursor:
             cursor.execute(
                 f"""SELECT * FROM "Person" WHERE "ID" = {self.id};""")
@@ -27,7 +28,7 @@ class PersonInitiator:
                             ARRAY[]::integer[],
                             ARRAY[]::integer[],
                             ARRAY[]::integer[],
-                            ARRAY[]::text[]);""")
+                            '{nname}');""")
                 connection.commit()
                 self.addConf(info['peer_id'] - 2000000000, name)
                 cursor.execute(
@@ -53,10 +54,7 @@ class PersonInitiator:
                 f"""SELECT * FROM "Person" WHERE "ID" = {self.id};""")
             value = cursor.fetchone()
             print(nick)
-            if nick != '["Ник не указан"]':
-                name = f"{nick[0]['first_name']} {nick[0]['last_name']}"
-            else:
-                name = nick
+            name = f"{nick[0]['first_name']} {nick[0]['last_name']}"
             print(value)
             value[1].append(name)
             value[2].append(0)
@@ -68,7 +66,7 @@ class PersonInitiator:
                                             rang = ARRAY{value[2]}::integer[],
                                             conference = ARRAY{value[3]}::integer[], 
                                             warn = ARRAY{value[4]}::integer[],
-                                            name = ARRAY{value[1]}::text[]
+                                            name = '{name}'
                                     WHERE "ID" = {self.id};""")
             connection.commit()
             connection.close()
@@ -87,6 +85,7 @@ class PersonExperimental:
             password=password,
             database=db_name
         )
+        nname = name[0]['first_name'] + " " + name[0]['last_name']
         with connection.cursor() as cursor:
             cursor.execute(
                 f"""SELECT * FROM "Person" WHERE "ID" = {self.id};""")
@@ -99,7 +98,7 @@ class PersonExperimental:
                             ARRAY[]::integer[],
                             ARRAY[]::integer[],
                             ARRAY[]::integer[],
-                            ARRAY[]::text[]);""")
+                            '{nname}');""")
                 connection.commit()
                 self.addConf(info['peer_id'] - 2000000000, name)
                 cursor.execute(
@@ -128,6 +127,8 @@ class PersonExperimental:
             b = value[3]
             print(a)
             print(b)
+            print(b.index(id_conf) + 1)
+            print(message.split(" ")[-1])
             cursor.execute(
                 f"""UPDATE "Person" SET rang[{b.index(id_conf) + 1}] = '{message.split(" ")[-1]}'
                         WHERE "ID" = {self.id};""")
@@ -169,11 +170,8 @@ class PersonExperimental:
             cursor.execute(
                 f"""SELECT * FROM "Person" WHERE "ID" = {self.id};""")
             value = cursor.fetchone()
-            print(nick)
-            if nick != '["Ник не указан"]':
-                name = f"{nick[0]['first_name']} {nick[0]['last_name']}"
-            else:
-                name = nick
+
+            name = f"{nick[0]['first_name']} {nick[0]['last_name']}"
             print(value)
             value[1].append(name)
             value[2].append(0)
@@ -185,7 +183,7 @@ class PersonExperimental:
                                         rang = ARRAY{value[2]}::integer[],
                                         conference = ARRAY{value[3]}::integer[], 
                                         warn = ARRAY{value[4]}::integer[],
-                                        name = ARRAY{value[1]}::text[]
+                                        name = '{name}'
                                 WHERE "ID" = {self.id};""")
             connection.commit()
             connection.close()
@@ -202,24 +200,21 @@ class PersonExperimental:
             cursor.execute(
                 f"""SELECT * FROM "Person" WHERE "ID" = {self.id};""")
             value = cursor.fetchone()
-            c = value[1]
-            d = value[4]
-            a = value[2]
-            b = value[3]
-            e = value[5]
-            f = b.index(id_conf)
-            a.pop(f)
-            c.pop(f)
-            d.pop(f)
-            b.remove(id_conf)
-            e.pop(f)
-            print(b)
+            nick = value[1]
+            rang = value[2]
+            conf = value[3]
+            warn = value[4]
+            f = conf.index(id_conf)
+            nick.pop(f)
+            rang.pop(f)
+            conf.remove(id_conf)
+            warn.pop(f)
+            print(f)
             cursor.execute(
-                f"""UPDATE "Person" SET nick = ARRAY{c}::text[],
-                                        rang = ARRAY{a}::integer[],
-                                        conference = ARRAY{b}::integer[], 
-                                        warn = ARRAY{d}::integer[],
-                                        nick = ARRAY{e}::text[]
+                f"""UPDATE "Person" SET nick = ARRAY{nick}::text[],
+                                        rang = ARRAY{rang}::integer[],
+                                        conference = ARRAY{conf}::integer[], 
+                                        warn = ARRAY{warn}::integer[]
                                 WHERE "ID" = {self.id};""")
             connection.commit()
             connection.close()
@@ -288,6 +283,105 @@ def nlist(id_conf):
         cursor.close()
         for value in values:
             if id_conf in value[3]:
-                ans += f"@id{value[0]}({value[5][value[3].index(id_conf)]}) - {value[1][value[3].index(id_conf)]} \n"
+                ans += f"[https://vk.com/id{value[0]}|{value[5]}] - {value[1][value[3].index(id_conf)]} \n"
 
         return ans
+
+
+def getAllID():
+    connection = psycopg2.connect(
+        host=host,
+        user=user,
+        password=password,
+        database=db_name
+    )
+    with connection.cursor() as cursor:
+        cursor.execute(
+            f"""SELECT "ID" FROM public."Person";""")
+        values = cursor.fetchall()
+        connection.close()
+        cursor.close()
+        return values
+
+
+def addName(id, name):
+    connection = psycopg2.connect(
+        host=host,
+        user=user,
+        password=password,
+        database=db_name
+    )
+    nname = name[0]['first_name'] + " " + name[0]['last_name']
+    if "'" in nname:
+        nname = str(nname.replace("'", ""))
+    com = f"""UPDATE public."Person" SET name = '{nname}' WHERE "ID" = {int(str(id)[1:-2])};"""
+    print(com)
+    with connection.cursor() as cursor:
+        cursor.execute(com)
+        connection.commit()
+        connection.close()
+        cursor.close()
+
+
+class PersonParse:
+    def __init__(self, conf_id, data):
+        self.id = data[0]['id']
+        self.name = data[0]['first_name'] + " " + data[0]['last_name']
+        print(self.id, self.name)
+        connection = psycopg2.connect(
+            host=host,
+            user=user,
+            password=password,
+            database=db_name
+        )
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"""SELECT * FROM "Person" WHERE "ID" = {self.id};""")
+            value = cursor.fetchone()
+            if value is None:
+                cursor.execute(
+                    f"""INSERT INTO "Person" VALUES(
+                                        '{self.id}',
+                                        ARRAY[]::text[],
+                                        ARRAY[]::integer[],
+                                        ARRAY[]::integer[],
+                                        ARRAY[]::integer[],
+                                        ARRAY[]::text[]);""")
+                connection.commit()
+                cursor.execute(
+                    f"""SELECT * FROM "Person" WHERE "ID" = {self.id};""")
+                value = cursor.fetchone()
+                print(value)
+                value[1].append(self.name)
+                value[2].append(0)
+                value[3].append(conf_id)
+                value[4].append(0)
+                print(value)
+                cursor.execute(
+                    f"""UPDATE "Person" SET nick = ARRAY{value[1]}::text[],
+                                                        rang = ARRAY{value[2]}::integer[],
+                                                        conference = ARRAY{value[3]}::integer[], 
+                                                        warn = ARRAY{value[4]}::integer[],
+                                                        name = ARRAY{value[1]}::text[]
+                                                WHERE "ID" = {self.id};""")
+                connection.commit()
+                cursor.execute(
+                    f"""SELECT * FROM "Person" WHERE "ID" = {self.id};""")
+                value = cursor.fetchone()
+            a = value[3]
+            print(value[3])
+            if not (conf_id in a):
+                value[1].append(self.name)
+                value[2].append(0)
+                value[3].append(conf_id)
+                value[4].append(0)
+                cursor.execute(
+                    f"""UPDATE "Person" SET nick = ARRAY{value[1]}::text[],
+                                                            rang = ARRAY{value[2]}::integer[],
+                                                            conference = ARRAY{value[3]}::integer[],
+                                                            warn = ARRAY{value[4]}::integer[],
+                                                            name = ARRAY{value[1]}::text[]
+                                                    WHERE "ID" = {self.id};""")
+                connection.commit()
+            connection.close()
+            cursor.close()

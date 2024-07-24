@@ -1,4 +1,4 @@
-token = "vk1.a.1lub7-5FhIRCavmUTBslhWXaSD2uifvT-OZM05c2lYScMTqTbE0u3-1k_CmWRAcpOqhkyti1P0Gygf8ZPHDzmw1-zen-WeNRKz6mScmWsHLXkEGEB7bR5GFnsndiqzFzlh79VN3nU9lZMrOIbGYS1BzCOnvHPA-xOPbU8i4sfAPqIWwp6WrTXeSwcBjBCbgId1F0ARKe5AAwijKQWpqKPQ"
+token = "vk1.a.fPcn9EpXHdSQg50XwGTL87gXVTGf1z40sd8umHxEVO6MoYlBSUq6Lmez_qjsni9GGfebb8EwxP7piKaK5He8_HbM_mBsbs02qTGgUu45tPQOpXItzo23TAyCVyqsvZWfV2H6Iv_VcLuXjUcFqlSrJnKwPLFsIQCcNifCnJgWc1jgPUG4WGPaaTvf-TuFo77bHaPQtI3JP1Y4FdapQCOH4Q"
 host = "127.0.0.1"
 user = 'postgres'
 password = "Admimlac132-"
