@@ -20,7 +20,8 @@ class Conference:
                 self.hi = None
             else:
                 self.hi = value[3]
-                self.password = value[-1]
+                self.password = value[6]
+                self.help = value[7]
                 self.name = value[1]
             connection.close()
             cursor.close()
@@ -52,6 +53,21 @@ class Conference:
             cursor.execute(
                 f"""UPDATE "Conference" SET pass = '{passw}'
                         WHERE "category_pass" = {category_pass};""")
+            connection.commit()
+            connection.close()
+            cursor.close()
+
+    def setHelp(self, id_conf, text):
+        connection = psycopg2.connect(
+            host=host,
+            user=user,
+            password=password,
+            database=db_name
+        )
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"""UPDATE "Conference" SET help = '{text}'
+                        WHERE "ID" = {id_conf};""")
             connection.commit()
             connection.close()
             cursor.close()
@@ -89,3 +105,30 @@ class ConferenceCluster:
 
             self.value = cursor.fetchall()
             print(self.value)
+
+
+class Grp:
+    def __init__(self):
+        self.id = 1
+
+    def addRecord(self, message):
+        print(message)
+        # connection = psycopg2.connect(
+        #     host=host,
+        #     user=user,
+        #     password=password,
+        #     database=db_name
+        # )
+        #
+        # with connection.cursor() as cursor:
+        #     cursor.execute(
+        #         f"""UPDATE "Grp"
+        #         SET date = '{date}',
+        #         SET time = '{time}',
+        #         SET info = '{info}',
+        #         SET frac = '{frac}'
+        #         WHERE fraction = '{fraction}';"""
+        #     )
+        #     connection.commit()
+        #     connection.close()
+        #     cursor.close()

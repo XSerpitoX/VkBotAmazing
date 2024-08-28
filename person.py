@@ -30,7 +30,6 @@ class PersonInitiator:
                             ARRAY[]::integer[],
                             '{nname}');""")
                 connection.commit()
-                self.addConf(info['peer_id'] - 2000000000, name)
                 cursor.execute(
                     f"""SELECT * FROM "Person" WHERE "ID" = {self.id};""")
                 value = cursor.fetchone()
@@ -39,6 +38,20 @@ class PersonInitiator:
             self.conference = value[3]
             self.warn = value[4]
             self.name = value[5]
+            if len(self.conference) >= 2:
+                if self.conference[0] == self.conference[1]:
+                    self.nick.pop(1)
+                    self.rang.pop(1)
+                    self.conference.pop(1)
+                    self.warn.pop(1)
+                    cursor.execute(
+                        f"""UPDATE "Person" SET nick = ARRAY{self.nick}::text[],
+                                                                rang = ARRAY{self.rang}::integer[],
+                                                                conference = ARRAY{self.conference}::integer[], 
+                                                                warn = ARRAY{self.warn}::integer[],
+                                                                name = '{nname}'
+                                                        WHERE "ID" = {self.id};""")
+                    connection.commit()
             connection.close()
             cursor.close()
 
@@ -76,7 +89,10 @@ class PersonInitiator:
 class PersonExperimental:
     def __init__(self, info, name):
         if 'action' in info:
-            self.id = info['action']['member_id']
+            if info['action']['type'] == 'chat_invite_user':
+                self.id = info['action']['member_id']
+            else:
+                self.id = info['from_id']
         else:
             self.id = info['text'].split(" ")[1].split('|')[0].replace('[id', '')
         connection = psycopg2.connect(
@@ -100,7 +116,6 @@ class PersonExperimental:
                             ARRAY[]::integer[],
                             '{nname}');""")
                 connection.commit()
-                self.addConf(info['peer_id'] - 2000000000, name)
                 cursor.execute(
                     f"""SELECT * FROM "Person" WHERE "ID" = {self.id};""")
                 value = cursor.fetchone()
@@ -109,6 +124,20 @@ class PersonExperimental:
             self.conference = value[3]
             self.warn = value[4]
             self.name = value[5]
+            if len(self.conference) >= 2:
+                if self.conference[0] == self.conference[1]:
+                    self.nick.pop(1)
+                    self.rang.pop(1)
+                    self.conference.pop(1)
+                    self.warn.pop(1)
+                    cursor.execute(
+                        f"""UPDATE "Person" SET nick = ARRAY{self.nick}::text[],
+                                                                rang = ARRAY{self.rang}::integer[],
+                                                                conference = ARRAY{self.conference}::integer[], 
+                                                                warn = ARRAY{self.warn}::integer[],
+                                                                name = '{nname}'
+                                                        WHERE "ID" = {self.id};""")
+                    connection.commit()
             connection.close()
             cursor.close()
 
@@ -283,7 +312,7 @@ def nlist(id_conf):
         cursor.close()
         for value in values:
             if id_conf in value[3]:
-                ans += f"[https://vk.com/id{value[0]}|{value[5]}] - {value[1][value[3].index(id_conf)]} \n"
+                ans += f"https://vk.com/id{value[0]} - {value[1][value[3].index(id_conf)]} \n"
 
         return ans
 
@@ -327,6 +356,8 @@ class PersonParse:
     def __init__(self, conf_id, data):
         self.id = data[0]['id']
         self.name = data[0]['first_name'] + " " + data[0]['last_name']
+        if "'" in self.name:
+            self.name = str(self.name.replace("'", ""))
         print(self.id, self.name)
         connection = psycopg2.connect(
             host=host,
@@ -346,7 +377,7 @@ class PersonParse:
                                         ARRAY[]::integer[],
                                         ARRAY[]::integer[],
                                         ARRAY[]::integer[],
-                                        ARRAY[]::text[]);""")
+                                        '{self.name}');""")
                 connection.commit()
                 cursor.execute(
                     f"""SELECT * FROM "Person" WHERE "ID" = {self.id};""")
@@ -362,7 +393,7 @@ class PersonParse:
                                                         rang = ARRAY{value[2]}::integer[],
                                                         conference = ARRAY{value[3]}::integer[], 
                                                         warn = ARRAY{value[4]}::integer[],
-                                                        name = ARRAY{value[1]}::text[]
+                                                        name = '{self.name}'::text
                                                 WHERE "ID" = {self.id};""")
                 connection.commit()
                 cursor.execute(
@@ -380,7 +411,7 @@ class PersonParse:
                                                             rang = ARRAY{value[2]}::integer[],
                                                             conference = ARRAY{value[3]}::integer[],
                                                             warn = ARRAY{value[4]}::integer[],
-                                                            name = ARRAY{value[1]}::text[]
+                                                            name = '{self.name}'::text
                                                     WHERE "ID" = {self.id};""")
                 connection.commit()
             connection.close()
